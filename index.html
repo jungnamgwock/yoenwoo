@@ -137,6 +137,41 @@
             margin-top: 1rem;
         }
         
+        .audio-controls {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .audio-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .audio-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .audio-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .audio-status {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-left: 0.5rem;
+        }
+        
         @media (max-width: 600px) {
             .ebook-container {
                 width: 95%;
@@ -163,9 +198,17 @@
             <div class="image-container">
                 <img id="currentImage" src="yw.jpg" alt="eBook Page" class="main-image">
             </div>
-            <h2 class="page-title" id="pageTitle">Welcome to Jongee's book</h2>
+            <h2 class="page-title" id="pageTitle">Welcome to Jongee eBook</h2>
             <p class="page-subtitle" id="pageSubtitle">Press Next to start reading</p>
             <div class="loading-message" id="loadingMessage" style="display: none;">Loading...</div>
+            
+            <div class="audio-controls" id="audioControls" style="display: none;">
+                <button class="audio-button" id="playButton" onclick="toggleAudio()">▶ Play</button>
+                <button class="audio-button" id="stopButton" onclick="stopAudio()">⏹ Stop</button>
+                <span class="audio-status" id="audioStatus"></span>
+            </div>
+            
+            <audio id="pageAudio" preload="none"></audio>
         </div>
         
         <div class="navigation">
@@ -178,11 +221,13 @@
     <script>
         let currentPage = -1; // -1 for intro page
         const totalPages = 15; // 0.jpg to 15.jpg
+        let currentAudio = null;
+        let isAudioPlaying = false;
         
         const pages = {
             '-1': {
                 image: 'yw.jpg',
-                title: 'Welcome to Jongee book',
+                title: 'Welcome to Jongee eBook',
                 subtitle: 'Press Next to start reading'
             }
         };
@@ -192,9 +237,111 @@
             pages[i] = {
                 image: `${i}.jpg`,
                 title: `Page ${i + 1}`,
-                // subtitle: `Chapter ${i + 1}`
+                audio: `${i}.m4a`
             };
         }
+        
+        function checkAudioExists(audioSrc) {
+            return new Promise((resolve) => {
+                const audio = new Audio();
+                audio.oncanplaythrough = () => resolve(true);
+                audio.onerror = () => resolve(false);
+                audio.src = audioSrc;
+            });
+        }
+        
+        async function loadAudio(audioSrc) {
+            const audioElement = document.getElementById('pageAudio');
+            const audioControls = document.getElementById('audioControls');
+            const audioStatus = document.getElementById('audioStatus');
+            const playButton = document.getElementById('playButton');
+            
+            // Stop current audio if playing
+            stopAudio();
+            
+            if (!audioSrc) {
+                audioControls.style.display = 'none';
+                return;
+            }
+            
+            audioStatus.textContent = 'Loading audio...';
+            audioControls.style.display = 'flex';
+            
+            const audioExists = await checkAudioExists(audioSrc);
+            
+            if (audioExists) {
+                audioElement.src = audioSrc;
+                audioStatus.textContent = 'Ready to play';
+                playButton.disabled = false;
+                
+                // Auto-play audio when page loads
+                setTimeout(() => {
+                    playAudio();
+                }, 500);
+            } else {
+                audioControls.style.display = 'none';
+                audioStatus.textContent = '';
+            }
+        }
+        
+        function playAudio() {
+            const audioElement = document.getElementById('pageAudio');
+            const playButton = document.getElementById('playButton');
+            const audioStatus = document.getElementById('audioStatus');
+            
+            if (audioElement.src) {
+                audioElement.play().then(() => {
+                    isAudioPlaying = true;
+                    playButton.textContent = '⏸ Pause';
+                    audioStatus.textContent = 'Playing...';
+                }).catch(() => {
+                    audioStatus.textContent = 'Cannot play audio';
+                });
+            }
+        }
+        
+        function pauseAudio() {
+            const audioElement = document.getElementById('pageAudio');
+            const playButton = document.getElementById('playButton');
+            const audioStatus = document.getElementById('audioStatus');
+            
+            audioElement.pause();
+            isAudioPlaying = false;
+            playButton.textContent = '▶ Play';
+            audioStatus.textContent = 'Paused';
+        }
+        
+        function stopAudio() {
+            const audioElement = document.getElementById('pageAudio');
+            const playButton = document.getElementById('playButton');
+            const audioStatus = document.getElementById('audioStatus');
+            
+            audioElement.pause();
+            audioElement.currentTime = 0;
+            isAudioPlaying = false;
+            playButton.textContent = '▶ Play';
+            if (audioElement.src) {
+                audioStatus.textContent = 'Ready to play';
+            }
+        }
+        
+        function toggleAudio() {
+            if (isAudioPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+        
+        // Audio event listeners
+        document.getElementById('pageAudio').addEventListener('ended', function() {
+            const playButton = document.getElementById('playButton');
+            const audioStatus = document.getElementById('audioStatus');
+            
+            isAudioPlaying = false;
+            playButton.textContent = '▶ Play';
+            audioStatus.textContent = 'Finished';
+        });
         
         function updatePage() {
             const currentImage = document.getElementById('currentImage');
@@ -235,6 +382,13 @@
             // Update button states
             prevButton.disabled = currentPage === -1;
             nextButton.disabled = currentPage === totalPages;
+            
+            // Load audio for current page
+            if (pageData.audio) {
+                loadAudio(pageData.audio);
+            } else {
+                loadAudio(null);
+            }
         }
         
         function nextPage() {
