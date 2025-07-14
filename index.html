@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Simple Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .image-container {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .image-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .main-image {
+            max-width: 400px;
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 15px;
+        }
+        
+        .image-placeholder {
+            width: 400px;
+            height: 300px;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 18px;
+            border-radius: 15px;
+            border: 2px dashed #ccc;
+        }
+        
+        .subtitle {
+            margin-top: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 300;
+        }
+        
+        @media (max-width: 500px) {
+            .container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            
+            .main-image,
+            .image-placeholder {
+                max-width: 300px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-container">
+            <!-- 실제 이미지 URL로 교체하세요 -->
+            <!-- <img src="your-image.jpg" alt="My Image" class="main-image"> -->
+            
+            <!-- 이미지가 없을 때 표시되는 플레이스홀더 -->
+            <div class="image-placeholder">
+                이미지를 여기에 추가하세요
+            </div>
+        </div>
+        <p class="subtitle">GitHub Pages로 만든 간단한 페이지</p>
+    </div>
+</body>
+</html>
